@@ -1,0 +1,85 @@
+{% include "header.html" %}
+
+{% block content %}
+    <!-- Payment Start -->
+    <div class="container-xxl py-5">
+        <div class="container">
+            <div class="text-center pb-4 wow fadeInUp" data-wow-delay="0.1s">
+                <h6 class="section-title bg-white text-center text-primary px-3">Payment</h6>
+                <h1 class="mb-5">Complete Your Booking for {{ tour.name }}</h1>
+            </div>
+            <div class="row g-5">
+                <!-- Tour Summary -->
+                <div class="col-lg-6 wow fadeInUp" data-wow-delay="0.1s">
+                    <h3 class="mb-3">Tour Summary</h3>
+                    <div class="card">
+                        <img class="card-img-top" src="{{ url_for('view_routes.serve_image', filename=tour.image_cover) }}" alt="{{ tour.name }}" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ tour.name }}</h5>
+                            <p class="card-text">{{ tour.summary }}</p>
+                            <p><i class="fa fa-clock me-2"></i>{{ tour.duration }} days</p>
+                            <p><i class="fa fa-level-up-alt me-2"></i>{{ tour.difficulty | capitalize }}</p>
+                            <p><i class="fa fa-map-marker-alt me-2"></i>{{ tour.start_location.description }}</p>
+                            <p><i class="fa fa-calendar-alt me-2"></i>{{ tour.start_dates[0] | datetimeformat }}</p>
+                            <h4 class="mt-3">Price: <span class="text-primary">${{ tour.price }}</span></h4>
+                        </div>
+                    </div>
+                </div>
+                <!-- Payment Form -->
+                <div class="col-lg-6 wow fadeInUp" data-wow-delay="0.3s">
+                    <h3 class="mb-3">Payment Details</h3>
+                    <div class="card">
+                        <div class="card-body">
+                            <p>Please proceed to Stripe to complete your payment securely.</p>
+                            <button id="checkout-button" class="btn btn-primary rounded-pill py-2 px-4">Proceed to Stripe</button>
+                            <p class="mt-3 text-muted">You will be redirected to Stripe's secure checkout page.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Payment End -->
+
+    <!-- Back to Top -->
+    <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        $(document).ready(function() {
+            new WOW().init();
+            const stripe = Stripe('{{ stripe_public_key }}');
+            const checkoutButton = document.getElementById('checkout-button');
+
+            checkoutButton.addEventListener('click', async () => {
+                try {
+                    const response = await fetch('/api/v1/bookings/checkout-session/{{ tour.id }}', {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    const data = await response.json();
+                    if (data.status !== 'success') {
+                        alert('Error creating checkout session. Please try again.');
+                        return;
+                    }
+
+                    const result = await stripe.redirectToCheckout({
+                        sessionId: data.session.id
+                    });
+
+                    if (result.error) {
+                        alert(result.error.message);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again.');
+                }
+            });
+        });
+    </script>
+{% endblock %}
+
+{% include 'footer.html' %}

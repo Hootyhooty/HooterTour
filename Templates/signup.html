@@ -1,0 +1,65 @@
+{% include 'header.html' %}
+
+<!-- Signup Section Start -->
+<div class="container-fluid py-5 wow fadeInUp" data-wow-delay="0.1s">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-lg p-4">
+                    <h2 class="text-center mb-4">Create Your Account</h2>
+                    <p class="text-center mb-4">Join us to explore the world with ease!</p>
+                    <!-- Flash Messages (trigger popup if email exists) -->
+                    <span style='background-color: #90ee90'>{% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    const flashMessages = {{ get_flashed_messages(with_categories=true) | tojson | safe }};
+                                    if (flashMessages.length > 0) {
+                                        flashMessages.forEach(([category, message]) => {
+                                            if (category === "error" && message === "Email already registered. Please use a different email.") {
+                                                Swal.fire({
+                                                    icon: 'error',
+                                                    title: 'Email Unavailable',
+                                                    text: message,
+                                                    confirmButtonColor: '#8bc34a',
+                                                    confirmButtonText: 'OK'
+                                                });
+                                            }
+                                        });
+                                    }
+                                });
+                            </script>
+                        {% endif %}
+                    {% endwith %}</span>
+                    <form action="{{ url_for('signup') }}" method="POST" class="needs-validation" novalidate>
+                        <div class="mb-3">
+                            <label for="full-name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="full-name" name="full-name" required placeholder="Enter your full name">
+                            <div class="invalid-feedback">Please enter your full name.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="email" name="email" required placeholder="Enter your email">
+                            <div class="invalid-feedback">Please enter a valid email address.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" required placeholder="Create a password">
+                            <div class="invalid-feedback">Please enter a password.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirm-password" class="form-label">Confirm Password</label>
+                            <input type="password" class="form-control" id="confirm-password" name="confirm-password" required placeholder="Confirm your password">
+                            <div class="invalid-feedback">Passwords do not match.</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 py-3">Sign Up</button>
+                        <p class="text-center mt-3">Already have an account? <a href="{{ url_for('login') }}" class="text-primary">Login here</a></p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Signup Section End -->
+
+{% include 'footer.html' %}

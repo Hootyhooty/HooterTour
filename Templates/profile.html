@@ -1,0 +1,51 @@
+{% include 'header.html' %}
+
+<!-- Profile Start -->
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
+            <h6 class="section-title bg-white text-center text-primary px-3">Travel Guide</h6>
+            <h1 class="mb-5">{{ guide.name }}'s Profile</h1>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8 wow fadeInUp" data-wow-delay="0.3s">
+                <div class="card shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="overflow-hidden mb-4">
+                            <img class="img-fluid rounded-circle" src="{{ guide.photo }}" alt="{{ guide.name }}" style="width: 200px; height: 200px; object-fit: cover;">
+                        </div>
+                        <h3 class="mb-2">{{ guide.name }}</h3>
+                        <h5 class="text-muted mb-3">{{ guide.role }}</h5>
+                        {% if guide.location %}
+                            <p class="mb-3"><i class="fas fa-map-marker-alt me-2"></i>{{ guide.location }}</p>
+                        {% endif %}
+                        <div class="d-flex justify-content-center mb-4">
+                            {% if guide.facebook %}
+                                <a class="btn btn-square mx-1" href="{{ guide.facebook }}"><i class="fab fa-facebook-f"></i></a>
+                            {% else %}
+                                <a class="btn btn-square mx-1 disabled" href="#"><i class="fab fa-facebook-f"></i></a>
+                            {% endif %}
+                            {% if guide.twitter %}
+                                <a class="btn btn-square mx-1" href="{{ guide.twitter }}"><i class="fab fa-twitter"></i></a>
+                            {% else %}
+                                <a class="btn btn-square mx-1 disabled" href="#"><i class="fab fa-twitter"></i></a>
+                            {% endif %}
+                            {% if guide.instagram %}
+                                <a class="btn btn-square mx-1" href="{{ guide.instagram }}"><i class="fab fa-instagram"></i></a>
+                            {% else %}
+                                <a class="btn btn-square mx-1 disabled" href="#"><i class="fab fa-instagram"></i></a>
+                            {% endif %}
+                        </div>
+                        <p class="mb-4">
+                            {{ guide.description | default('An experienced travel guide passionate about sharing adventures and local insights.', true) }}
+                        </p>
+                        <a href="{{ url_for('view_routes.team') }}" class="btn btn-primary">Back to Team</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Profile End -->
+
+{% include 'footer.html' %}

@@ -1,0 +1,163 @@
+{% include 'header.html' %}
+
+<!-- Dashboard Content -->
+<div class="container py-5">
+    <h2 class="text-center mb-4">{{ title }}</h2>
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <form id="profile-form" enctype="multipart/form-data">
+                <!-- Profile Photo -->
+                <div class="mb-3 text-center">
+                    <img id="profile-photo-preview"
+                         src="{% if user.photo and user.photo != 'default.jpg' %}/api/v1/users/image/{{ user.profile_slug }}{% else %}{{ url_for('serve_static_image', filename='placeholder.jpg') }}{% endif %}"
+                         alt="Profile Photo"
+                         class="user-image dashboard-profile-image mb-2">
+                    <div>
+                        <label for="photo" class="form-label">Profile Photo</label>
+                        <input type="file" class="form-control" id="photo" name="photo" accept="image/png,image/jpeg,image/bmp,image/tiff,image/webp">
+                    </div>
+                </div>
+                <!-- Name -->
+                <div class="mb-3">
+                    <label for="name" class="form-label">Name</label>
+                    <input type="text" class="form-control" id="name" name="name" value="{{ user.name | default('') }}" required>
+                </div>
+                <!-- Email -->
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" name="email" value="{{ user.email | default('') }}" readonly>
+                </div>
+                <!-- Password -->
+                <div class="mb-3">
+                    <label for="password" class="form-label">New Password (leave blank to keep current)</label>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Enter new password">
+                </div>
+                <!-- Location -->
+                <div class="mb-3">
+                    <label for="location" class="form-label">Location</label>
+                    <input type="text" class="form-control" id="location" name="location" value="{{ user.location | default('') }}" placeholder="e.g., New York, USA">
+                </div>
+                <!-- Error/Success Messages -->
+                <div class="mb-3">
+                    <div id="form-error" class="text-danger" style="display: none;"></div>
+                    <div id="form-success" class="text-success" style="display: none;"></div>
+                </div>
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-primary w-100">Save Changes</button>
+                </form>
+        </div>
+    </div>
+</div>
+
+<!-- Dashboard-specific CSS -->
+<style>
+    .dashboard-profile-image {
+        width: 400px;
+        height: 400px;
+        object-fit: cover;
+    }
+</style>
+
+<!-- Dashboard-specific JavaScript -->
+<script>
+    $(document).ready(function() {
+        // Store the original photo URL (same as the header)
+        const originalPhoto = "{% if user.photo and user.photo != 'default.jpg' %}/api/v1/users/image/{{ user.profile_slug }}{% else %}{{ url_for('serve_static_image', filename='placeholder.jpg') }}{% endif %}";
+        console.log("Original photo URL in dashboard:", originalPhoto);
+
+        // Ensure the image loads, and fall back if it fails
+        $('#profile-photo-preview').on('error', function() {
+            console.log("Failed to load profile photo, falling back to placeholder");
+            $(this).attr('src', "{{ url_for('serve_static_image', filename='placeholder.jpg') }}");
+        });
+
+        // Preview new profile photo when selected
+        $('#photo').on('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const allowedTypes = ['image/png', 'image/jpeg', 'image/bmp', 'image/tiff', 'image/webp'];
+                if (!allowedTypes.includes(file.type)) {
+                    $('#form-error').text('Please upload a PNG, JPEG, BMP, TIFF, or WebP image.').show();
+                    $('#form-success').hide();
+                    // Revert to the original photo if the file type is invalid
+                    $('#profile-photo-preview').attr('src', originalPhoto);
+                    $('#photo').val(''); // Clear the file input
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    $('#profile-photo-preview').attr('src', e.target.result);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                // If no file is selected (e.g., user cancels the file picker), revert to the original photo
+                $('#profile-photo-preview').attr('src', originalPhoto);
+            }
+        });
+
+        // Handle form submission with client-side validation
+        $('#profile-form').on('submit', function(e) {
+            e.preventDefault();
+
+            const name = $('#name').val().trim();
+            const password = $('#password').val().trim();
+            const location = $('#location').val().trim();
+
+            // Client-side validation
+            if (!name) {
+                $('#form-error').text('Name is required.').show();
+                $('#form-success').hide();
+                return;
+            }
+            if (name.length < 2) {
+                $('#form-error').text('Name must be at least 2 characters long.').show();
+                $('#form-success').hide();
+                return;
+            }
+            if (password && password.length < 6) {
+                $('#form-error').text('Password must be at least 6 characters long.').show();
+                $('#form-success').hide();
+                return;
+            }
+
+            const formData = new FormData();
+            if (name) formData.append('name', name);
+            if (password) formData.append('password', password);
+            if (location) formData.append('location', location);
+            const photo = $('#photo')[0].files[0];
+            if (photo) formData.append('photo', photo);
+
+            const token = localStorage.getItem('token');
+
+            $.ajax({
+                url: '/api/v1/users/update-me',
+                method: 'PATCH',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    $('#form-success').text(response.message || 'Profile updated successfully').show();
+                    $('#form-error').hide();
+                    setTimeout(() => {
+                        try {
+                            location.reload(true);
+                        } catch (e) {
+                            window.location = window.location.href;
+                        }
+                    }, 2000);
+                },
+                error: function(xhr) {
+                    const errorMessage = xhr.responseJSON?.message || 'Error updating profile';
+                    $('#form-error').text(errorMessage).show();
+                    $('#form-success').hide();
+                }
+            });
+        });
+    });
+</script>
+
+<!-- Footer -->
+{% include 'footer.html' %}

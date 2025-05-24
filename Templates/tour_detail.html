@@ -1,0 +1,164 @@
+{% include "header.html" %}
+
+{% block content %}
+    <!-- Tour Detail Start -->
+    <div class="container-xxl py-5">
+        <div class="container">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="wow fadeInUp" data-wow-delay="0.1s">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('view_routes.destination') }}">Destinations</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ tour.name }}</li>
+                </ol>
+            </nav>
+            <div class="row g-5">
+                <!-- Tour Image Section -->
+                <div class="col-lg-6 wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="position-relative overflow-hidden rounded">
+                        <img class="img-fluid w-100" src="{{ url_for('view_routes.serve_image', filename=tour.image_cover) }}" alt="{{ tour.name }}" style="object-fit: cover; height: 400px;">
+                        <div class="position-absolute top-0 start-0 p-3 bg-primary bg-opacity-75 text-white rounded-bottom-end">
+                            <h5 class="m-0">{{ tour.name }}</h5>
+                            <small>{{ tour.difficulty | capitalize }} | {{ tour.duration }} Days</small>
+                        </div>
+                    </div>
+                </div>
+                <!-- Tour Details Section -->
+                <div class="col-lg-6 wow fadeInUp" data-wow-delay="0.3s">
+                    <h2 class="mb-3">{{ tour.name }}</h2>
+                    <p class="mb-3">{{ tour.summary }}</p>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <p>
+                                <i class="fa fa-star text-primary me-2"></i>
+                                {{ tour.ratings_average }} ({{ tour.ratings_quantity }} reviews)
+                                {% if tour.ratings_quantity == 0 %}
+                                    - no review
+                                {% else %}
+                                    {% if tour.ratings_average <= 1 %}
+                                        - mostly negative
+                                    {% elif tour.ratings_average <= 2 %}
+                                        - negative
+                                    {% elif tour.ratings_average <= 3 %}
+                                        - mixed
+                                    {% elif tour.ratings_average <= 4 %}
+                                        - positive
+                                    {% else %}
+                                        - very positive
+                                    {% endif %}
+                                {% endif %}
+                            </p>
+                            <p><i class="fa fa-users me-2"></i>Max {{ tour.max_group_size }} people</p>
+                            <p><i class="fa fa-map-marker-alt me-2"></i>{{ tour.start_location.description }}</p>
+                            <p>
+                                <i class="fa fa-map me-2"></i>
+                                <a href="https://www.google.com/maps/search/?api=1&query={{ tour.start_location.coordinates[1] }},{{ tour.start_location.coordinates[0] }}"
+                                   target="_blank" class="text-primary">
+                                    View on Google Maps
+                                </a>
+                            </p>
+                        </div>
+                        <div class="col-6">
+                            <p><i class="fa fa-clock me-2"></i>{{ tour.duration }} days</p>
+                            <p><i class="fa fa-level-up-alt me-2"></i>{{ tour.difficulty | capitalize }}</p>
+                            <p><i class="fa fa-calendar-alt me-2"></i>
+                                {{ tour.start_dates[0] | datetimeformat }}
+                                {% if tour.start_dates | length > 1 %}
+                                    (+{{ tour.start_dates | length - 1 }} more)
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <h4 class="mb-3">Price</h4>
+                        <h3 class="text-primary">${{ tour.price }}</h3>
+                    </div>
+                    <!-- Action Buttons -->
+                    <div class="mt-4 d-flex gap-3">
+                        <a href="#" class="btn btn-outline-primary rounded-pill py-2 px-4">Add to Wishlist</a>
+                        <a href="{{ url_for('view_routes.destination', tour=tour.slug) }}" class="btn btn-primary rounded-pill py-2 px-4">Book Now</a>
+                    </div>
+                </div>
+            </div>
+            <!-- Additional Images -->
+            <div class="row g-4 mt-5">
+                <h3 class="mb-4 wow fadeInUp" data-wow-delay="0.1s">Gallery</h3>
+                {% for image in tour.images %}
+                    <div class="col-md-4 wow fadeInUp" data-wow-delay="{{ loop.index0 * 0.2 }}s">
+                        <img class="img-fluid rounded w-100" src="{{ url_for('view_routes.serve_image', filename=image) }}" alt="Tour Image" style="height: 200px; object-fit: cover;">
+                    </div>
+                {% endfor %}
+            </div>
+            <!-- Locations -->
+            <div class="mt-5 wow fadeInUp" data-wow-delay="0.1s">
+                <h3 class="mb-4">Tour Locations</h3>
+                <div class="row g-4">
+                    {% for location in tour.locations %}
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ location.description }}</h5>
+                                    <p class="card-text"><i class="fa fa-calendar-day me-2"></i>Day {{ location.day }}</p>
+                                    <a href="https://www.google.com/maps/search/?api=1&query={{ location.coordinates[1] }},{{ location.coordinates[0] }}"
+                                       target="_blank" class="fa fa-map-marker-alt me-2 btn btn-primary btn-sm">
+                                        View on Google Maps
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <!-- Reviews -->
+            <div class="mt-5 wow fadeInUp" data-wow-delay="0.1s">
+                <h3 class="mb-4">Customer Reviews</h3>
+                {% if tour.reviews %}
+                    {% for review in tour.reviews[:3] %}
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <img class="rounded-circle me-3"
+                                         src="{% if review.user.profile_slug %}/api/v1/users/image/{{ review.user.profile_slug }}{% else %}/static/img/users/default.jpg{% endif %}"
+                                         alt="{{ review.user.name }}"
+                                         style="width: 50px; height: 50px; object-fit: cover;">
+                                    <div>
+                                        <h6 class="mb-0">{{ review.user.name }}</h6>
+                                        <small>{{ review.created_at | datetimeformat }}</small>
+                                    </div>
+                                </div>
+                                <p class="mb-2"><i class="fa fa-star text-primary"></i> {{ review.rating }}</p>
+                                <p>{{ review.review }}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    {% if tour.reviews | length > 3 %}
+                        <a href="#" class="btn btn-link p-0">Show All Reviews</a>
+                    {% endif %}
+                {% else %}
+                    <p>No reviews yet. Be the first to share your experience!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <!-- Tour Detail End -->
+
+    <!-- Back to Top -->
+    <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        $(document).ready(function() {
+            // Initialize WOW.js for animations
+            new WOW().init();
+
+            // Add active class to current nav link
+            $('.nav-item a').each(function() {
+                if ($(this).attr('data-path') === '/tour/{{ tour.slug }}') {
+                    $(this).addClass('active');
+                }
+            });
+        });
+    </script>
+{% endblock %}
+
+{% include 'footer.html' %}

@@ -1,0 +1,123 @@
+{% include "header.html" %}
+
+{% block content %}
+    <!-- Process Start -->
+    <div class="container-xxl py-5">
+        <div class="container">
+            <div class="text-center pb-4 wow fadeInUp" data-wow-delay="0.1s">
+                <h6 class="section-title bg-white text-center text-primary px-3">Process</h6>
+                <h1 class="mb-5">3 Easy Steps</h1>
+            </div>
+            <div class="row gy-5 gx-4 justify-content-center">
+                <div class="col-lg-4 col-sm-6 text-center pt-4 wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="position-relative border border-primary pt-5 pb-4 px-4"
+                         style="{% if selected_tour %}background-image: url('{{ url_for('view_routes.serve_image', filename=selected_tour.image_cover) }}'); background-size: cover; background-position: center;{% else %}background-color: #f8f9fa;{% endif %}">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-primary rounded-circle position-absolute top-0 start-50 translate-middle shadow" style="width: 100px; height: 100px;">
+                            <i class="fa fa-globe fa-3x text-white"></i>
+                        </div>
+                        <h5 class="mt-4">{{ selected_tour.name if selected_tour else 'Choose A Destination' }}</h5>
+                        <hr class="w-25 mx-auto bg-primary mb-1">
+                        <hr class="w-50 mx-auto bg-primary mt-0">
+                        <p class="mb-0">{% if selected_tour %}Explore {{ selected_tour.name }} with us!{% else %}Select a tour from the list below to start your adventure.{% endif %}</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-6 text-center pt-4 wow fadeInUp" data-wow-delay="0.3s">
+                    <div class="position-relative border border-primary pt-5 pb-4 px-4">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-primary rounded-circle position-absolute top-0 start-50 translate-middle shadow" style="width: 100px; height: 100px;">
+                            <i class="fa fa-dollar-sign fa-3x text-white"></i>
+                        </div>
+                        <h5 class="mt-4">Pay Online</h5>
+                        <hr class="w-25 mx-auto bg-primary mb-1">
+                        <hr class="w-50 mx-auto bg-primary mt-0">
+                        <p class="mb-0">{% if selected_tour %}Ready to book {{ selected_tour.name }}? Proceed to payment.{% else %}Please select a tour first.{% endif %}</p>
+                        {% if selected_tour %}
+                            <a href="{{ url_for('view_routes.payment', hashed_id=selected_tour.id | hashid) }}" class="btn btn-primary mt-3">Proceed to Payment</a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-6 text-center pt-4 wow fadeInUp" data-wow-delay="0.5s">
+                    <div class="position-relative border border-primary pt-5 pb-4 px-4">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-primary rounded-circle position-absolute top-0 start-50 translate-middle shadow" style="width: 100px; height: 100px;">
+                            <i class="fa fa-plane fa-3x text-white"></i>
+                        </div>
+                        <h5 class="mt-4">Fly Today</h5>
+                        <hr class="w-25 mx-auto bg-primary mb-1">
+                        <hr class="w-50 mx-auto bg-primary mt-0">
+                        <p class="mb-0">{% if booking and selected_tour %}View your booking details for {{ selected_tour.name }}.{% else %}Complete payment to view your booking summary.{% endif %}</p>
+                        {% if booking %}
+                            <a href="{{ url_for('view_routes.booking_summary', hashed_id=booking.id | hashid) }}" class="btn btn-primary mt-3">View Booking Summary</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Process End -->
+
+    <!-- Destination Start -->
+    <div class="container-xxl py-5 destination">
+        <div class="container">
+            <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
+                <h6 class="section-title bg-white text-center text-primary px-3">Destination</h6>
+                <h1 class="mb-5">Popular Destinations</h1>
+                {% if search_term %}
+                    <p class="mb-4">Showing results for: <strong>{{ search_term }}</strong></p>
+                {% endif %}
+            </div>
+            {% if tours and tours|length > 0 %}
+                <div class="row g-4">
+                    {% for tour in tours %}
+                        <div class="col-lg-4 col-md-6 wow zoomIn" data-wow-delay="{{ loop.index0 * 0.2 }}s">
+                            <a class="position-relative d-block overflow-hidden m-0" href="{{ url_for('view_routes.get_tour_by_slug', slug=tour.slug) }}">
+                                <img class="img-fluid" src="{{ url_for('view_routes.serve_image', filename=tour.image_cover) }}" alt="{{ tour.name }}" style="height: 250px; object-fit: cover; width: 100%;">
+                                <div class="bg-white text-primary fw-bold position-absolute bottom-0 end-0 m-3 py-1 px-2">
+                                    {{ tour.name }}
+                                </div>
+                            </a>
+                        </div>
+                        {% if loop.index % 3 == 0 and not loop.last %}
+                            </div><div class="row g-4">
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="row g-4">
+                    <div class="col-lg-12 col-md-12 wow zoomIn" data-wow-delay="0.1s">
+                        <a class="position-relative d-block overflow-hidden m-0" href="#">
+                            <img class="img-fluid" src="{{ url_for('serve_static_image', filename='placeholder.jpg') }}" alt="Placeholder" style="height: 250px; object-fit: cover; width: 100%;">
+                            <div class="bg-white text-primary fw-bold position-absolute bottom-0 end-0 m-3 py-1 px-2">
+                                {% if search_term %}
+                                    No tours found for "{{ search_term }}".
+                                {% else %}
+                                    No Tours Available
+                                {% endif %}
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    <!-- Destination End -->
+
+    <!-- Back to Top -->
+    <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        $(document).ready(function() {
+            // Initialize WOW.js for animations
+            new WOW().init();
+
+            // Add active class to current nav link
+            $('.nav-item a').each(function() {
+                if ($(this).attr('data-path') === '/destination') {
+                    $(this).addClass('active');
+                }
+            });
+        });
+    </script>
+{% endblock %}
+
+{% include 'footer.html' %}
