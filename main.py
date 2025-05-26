@@ -212,7 +212,7 @@ if __name__ == "__main__":
     server_running = True
     print(f"App running on port {port}...")
     try:
-        app.run(host='0.0.0.0', port=port, debug=True)
+        app.run(host='0.0.0.0', port=port, debug=False)
     except KeyboardInterrupt:
         print("Keyboard interrupt received. Shutting down gracefully...")
         shutdown_server()
