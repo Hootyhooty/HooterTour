@@ -1,0 +1,36 @@
+{% include 'header.html' %}
+
+<!-- Testimonial Start -->
+<div class="container-xxl py-5 testimonial-section">
+    <div class="container">
+        <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
+            <h6 class="section-title bg-white text-center text-primary px-3">Testimonial</h6>
+            <h1 class="mb-5">Our Clients Say!!!</h1>
+        </div>
+        {% if testimonials %}
+            <div class="row g-4">
+                {% for testimonial in testimonials %}
+                    <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="{{ loop.index0 * 0.2 + 0.1 }}s">
+                        <div class="testimonial-item">
+                            <div class="overflow-hidden">
+                                <img class="img-fluid" src="{{ testimonial['user']['photo'] if testimonial['user'] and testimonial['user']['photo'] != 'default.jpg' else '/static/img/users/default.jpg' }}" alt="{{ testimonial['name'] }}">
+                            </div>
+                            <div class="text-center p-4">
+                                <h5 class="mb-0">{{ testimonial['name'] }}</h5>
+                                <p class="mb-2">{{ testimonial['review'] }}</p>
+                                <small class="text-muted">{{ testimonial['date'] }}</small>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="col-12 text-center">
+                <p>No testimonials available at the moment.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+<!-- Testimonial End -->
+
+{% include 'footer.html' %}

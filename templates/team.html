@@ -1,0 +1,59 @@
+{% include 'header.html' %}
+
+<!-- Team Start -->
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
+            <h6 class="section-title bg-white text-center text-primary px-3">Travel Guide</h6>
+            <h1 class="mb-5">Meet Our Guide</h1>
+        </div>
+        <div class="row g-4">
+            {% for guide in guides %}
+                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="{{ (loop.index0 * 0.2 + 0.1) | round(1) }}s">
+                    <div class="team-item">
+                        <div class="overflow-hidden">
+                            <img class="img-fluid" src="{{ guide.photo }}" alt="{{ guide.name }}">
+                        </div>
+                        <div class="position-relative d-flex justify-content-center" style="margin-top: -19px;">
+                            {% if guide.facebook %}
+                                <a class="btn btn-square mx-1" href="{{ guide.facebook }}"><i class="fab fa-facebook-f"></i></a>
+                            {% else %}
+                                <a class="btn btn-square mx-1 disabled" href="#"><i class="fab fa-facebook-f"></i></a>
+                            {% endif %}
+                            {% if guide.twitter %}
+                                <a class="btn btn-square mx-1" href="{{ guide.twitter }}"><i class="fab fa-twitter"></i></a>
+                            {% else %}
+                                <a class="btn btn-square mx-1 disabled" href="#"><i class="fab fa-twitter"></i></a>
+                            {% endif %}
+                            {% if guide.instagram %}
+                                <a class="btn btn-square mx-1" href="{{ guide.instagram }}"><i class="fab fa-instagram"></i></a>
+                            {% else %}
+                                <a class="btn btn-square mx-1 disabled" href="#"><i class="fab fa-instagram"></i></a>
+                            {% endif %}
+                        </div>
+                        <div class="text-center p-4">
+                            <h5 class="mb-0">
+                                {% if guide.profile_slug %}
+                                    <a href="{{ url_for('view_routes.guide_profile', profile_slug=guide.profile_slug) }}">{{ guide.name }}</a>
+                                {% else %}
+                                    {{ guide.name }}
+                                {% endif %}
+                            </h5>
+                            <small>{{ guide.role | capitalize }}</small>
+                        </div>
+                    </div>
+                </div>
+                {% if loop.index is divisibleby 3 and not loop.last %}
+                    </div><div class="row g-4">
+                {% endif %}
+            {% else %}
+                <div class="col-12 text-center">
+                    <p>No guides available at the moment.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<!-- Team End -->
+
+{% include 'footer.html' %}

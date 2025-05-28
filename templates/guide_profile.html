@@ -1,0 +1,54 @@
+{% include 'header.html' %}
+
+<!-- Guide Profile Start -->
+<div class="container-xxl py-5">
+    <div class="container">
+        <!-- Guide Portrait and Details Section -->
+        <div class="row g-5">
+            <div class="col-lg-6 wow fadeInUp" data-wow-delay="0.1s" style="min-height: 500px;">
+                <div class="position-relative h-100">
+                    <img class="img-fluid position-absolute w-100 h-100" src="{{ guide.photo }}" alt="{{ guide.name }}" style="object-fit: cover;">
+                </div>
+            </div>
+            <div class="col-lg-6 wow fadeInUp" data-wow-delay="0.3s">
+                <h6 class="section-title bg-white text-start text-primary pe-3">Guide Profile</h6>
+                <h1 class="mb-4">Meet <span class="text-primary">{{ guide.name }}</span></h1>
+                <h3 class="mb-3">{{ guide.role }}</h3>
+                <p class="mb-2"><strong>Email:</strong> {{ guide.email }}</p>
+                <p class="mb-4">{{ guide.description or 'No description available.' }}</p>
+                <div class="position-relative d-flex justify-content-start">
+                    <a class="btn btn-square mx-1" href="{{ guide.facebook or '#' }}"><i class="fab fa-facebook-f"></i></a>
+                    <a class="btn btn-square mx-1" href="{{ guide.twitter or '#' }}"><i class="fab fa-twitter"></i></a>
+                    <a class="btn btn-square mx-1" href="{{ guide.instagram or '#' }}"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <!-- Tours Section -->
+        <div class="mt-5">
+            <h2 class="text-center mb-4">Tours Guided by {{ guide.name }}</h2>
+            {% if tours %}
+                <div class="row g-4">
+                    {% for tour in tours %}
+                        <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="{{ loop.index0 * 0.2 + 0.1 }}s">
+                            <div class="destination-item" style="height: 200px; position: relative; overflow: hidden;">
+                                <a href="{{ url_for('view_routes.get_tour', slug=tour.slug) }}">
+                                    <img class="img-fluid" src="{{ url_for('view_routes.serve_image', filename=tour.image_cover) }}" alt="{{ tour.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                </a>
+                                <div class="destination-overlay">
+                                    <h5 class="mb-0">{{ tour.name }}</h5>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center">
+                    <p>No tours currently guided by {{ guide.name }}.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<!-- Guide Profile End -->
+
+{% include 'footer.html' %}

@@ -1,0 +1,38 @@
+{% include 'header.html' %}
+
+    <!-- Auth Section Start -->
+    <div class="container-fluid py-5 wow fadeInUp" data-wow-delay="0.1s">
+        <div class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-lg-6">
+                    <div class="auth-card">
+                        <h2>Sign in or create an account</h2>
+                        <p class="subtitle">Sign up for free or log in to access amazing deals and benefits!</p>
+                        <a href="#" class="social-btn google-btn">
+                            <img src="{{ url_for('static', filename='img/google-icon.png') }}" alt="Google" style="width: 20px; margin-right: 10px;"> Sign in with Google
+                        </a>
+                        <a href="#" class="social-btn facebook-btn">
+                            <img src="{{ url_for('static', filename='img/facebook-icon.png') }}" alt="Facebook" style="width: 20px; margin-right: 10px;"> Sign in with Facebook
+                        </a>
+                        <a href="#" class="social-btn apple-btn">
+                            <img src="{{ url_for('static', filename='img/apple-icon.png') }}" alt="Apple" style="width: 20px; margin-right: 10px;"> Sign in with Apple
+                        </a>
+                        <div style="text-align: center; margin: 10px 0;">or</div>
+                        <form action="{{ url_for('signup') }}" method="POST" class="needs-validation" novalidate>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control email-input" id="email" name="email" required placeholder="id@email.com">
+                                <div class="invalid-feedback">Please enter a valid email address.</div>
+                            </div>
+                            <button type="submit" class="continue-btn">Continue</button>
+                        </form>
+                        <p class="other-options">Other ways to sign in <span style="font-size: 0.7rem;">▼</span></p>
+                        <p class="terms">By signing in, I agree to Tourist's Terms of Use and Privacy Policy.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Auth Section End -->
+
+{% include 'footer.html' %}

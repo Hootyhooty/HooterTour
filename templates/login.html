@@ -1,0 +1,40 @@
+{% include 'header.html' %}
+
+    <!-- Login Section Start -->
+    <div class="container-fluid py-5 wow fadeInUp" data-wow-delay="0.1s">
+        <div class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-lg-6">
+                    <div class="card border-0 shadow-lg p-4">
+                        <!-- Flash Messages -->
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+
+                        <h2 class="text-center mb-4">Login</h2>
+                        <form action="{{ url_for('login') }}" method="POST" class="needs-validation" novalidate>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="email" name="email" required placeholder="Enter your email">
+                                <div class="invalid-feedback">Please enter a valid email address.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" name="password" required placeholder="Enter your password">
+                                <div class="invalid-feedback">Please enter your password.</div>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 py-3">Login</button>
+                            <p class="text-center mt-3">Don’t have an account? <a href="{{ url_for('signup') }}" class="text-primary">Sign up here</a></p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Login Section End -->
+
+{% include 'footer.html' %}

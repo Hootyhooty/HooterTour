@@ -1,0 +1,73 @@
+{% include "header.html" %}
+
+{% block content %}
+    <!-- Booking Summary Start -->
+    <div class="container-xxl py-5">
+        <div class="container">
+            <div class="text-center pb-4 wow fadeInUp" data-wow-delay="0.1s">
+                <h6 class="section-title bg-white text-center text-primary px-3">Booking Summary</h6>
+                <h1 class="mb-5">Your Booking for {{ tour.name }}</h1>
+            </div>
+            <div class="row g-5">
+                <!-- Booking Details -->
+                <div class="col-lg-6 wow fadeInUp" data-wow-delay="0.1s">
+                    <h3 class="mb-3">Booking Details</h3>
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ tour.name }}</h5>
+                            <p><i class="fa fa-user me-2"></i>Booked by: {{ user.name }}</p>
+                            <p><i class="fa fa-envelope me-2"></i>Email: {{ user.email }}</p>
+                            <p><i class="fa fa-clock me-2"></i>Booked on: {{ booking.created_at | datetimeformat }}</p>
+                            <p><i class="fa fa-dollar-sign me-2"></i>Price: ${{ booking.price }}</p>
+                            <p><i class="fa fa-check-circle me-2"></i>Payment Status: {{ 'Paid' if booking.paid else 'Pending' }}</p>
+                            <p><i class="fa fa-map-marker-alt me-2"></i>Starting Location: {{ tour.start_location.description }}</p>
+                            <p><i class="fa fa-calendar-alt me-2"></i>Start Date: {{ tour.start_dates[0] | datetimeformat }}</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Printable Confirmation Card -->
+                <div class="col-lg-6 wow fadeInUp" data-wow-delay="0.3s">
+                    <h3 class="mb-3">Confirmation Card</h3>
+                    <div id="confirmation-card" class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Tour Confirmation: {{ tour.name }}</h5>
+                            <p><strong>Booking ID:</strong> {{ booking.id | hashid }}</p>
+                            <p><strong>Traveler:</strong> {{ user.name }}</p>
+                            <p><strong>Tour:</strong> {{ tour.name }}</p>
+                            <p><strong>Start Date:</strong> {{ tour.start_dates[0] | datetimeformat }}</p>
+                            <p><strong>Location:</strong> {{ tour.start_location.description }}</p>
+                            <p><strong>Price Paid:</strong> ${{ booking.price }}</p>
+                            <p><strong>Instructions:</strong> Please present this card to your guide at the start of the tour.</p>
+                            <img src="{{ url_for('view_routes.serve_image', filename=tour.image_cover) }}" alt="{{ tour.name }}" style="width: 100%; height: 150px; object-fit: cover;">
+                        </div>
+                    </div>
+                    <button onclick="printCard()" class="btn btn-primary mt-3">Print Confirmation Card</button>
+                    <a href="{{ url_for('view_routes.destination') }}" class="btn btn-primary mt-3">Confirm and Return to Destinations</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Booking Summary End -->
+
+    <!-- Back to Top -->
+    <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        $(document).ready(function() {
+            new WOW().init();
+        });
+
+        function printCard() {
+            const printContent = document.getElementById('confirmation-card').outerHTML;
+            const originalContent = document.body.innerHTML;
+            document.body.innerHTML = printContent;
+            window.print();
+            document.body.innerHTML = originalContent;
+            window.location.reload();
+        }
+    </script>
+{% endblock %}
+
+{% include 'footer.html' %}
