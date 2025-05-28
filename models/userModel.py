@@ -1,4 +1,3 @@
-# models/userModel.py
 from mongoengine import Document, EmailField, StringField, BooleanField, DateTimeField, EnumField
 from mongoengine import ValidationError
 from bcrypt import hashpw, gensalt, checkpw

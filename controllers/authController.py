@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-import jwt
+import jose as jwt
 import hashlib
 import datetime
 from flask import request, jsonify, make_response, g, current_app, url_for
@@ -14,11 +14,6 @@ import logging
 # Debug JWT module
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
-try:
-    logger.debug(f"JWT module: {jwt.__file__}, version: {jwt.__version__}")
-except AttributeError:
-    logger.error("Invalid JWT module detected")
-    raise ImportError("Please install PyJWT: pip install PyJWT")
 
 # Load environment variables
 load_dotenv()
