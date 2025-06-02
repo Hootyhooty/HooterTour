@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-import jose as jwt
+from jose import jwt
 import hashlib
 import datetime
 from flask import request, jsonify, make_response, g, current_app, url_for

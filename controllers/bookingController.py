@@ -282,7 +282,7 @@ def webhook_checkout():
         logger.debug(f"Webhook signature: {sig_header}")
 
         event = stripe.Webhook.construct_event(
-            payload, sig_header, stripe_webhook_secret
+            payload, sig_header, os.getenv('STRIPE_WEBHOOK_SECRET')
         )
 
         if event['type'] == 'checkout.session.completed':

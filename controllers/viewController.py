@@ -454,12 +454,13 @@ def payment(tour_id):
             return render_template('error.html', title='Tour Not Found'), 404
 
         stripe_public_key = os.getenv('STRIPE_PUBLIC_KEY')
+        stripe_webhook = os.getenv('STRIPE_WEBHOOK')
         if not stripe_public_key:
             logger.error("Stripe public key not configured")
             raise AppError("Payment configuration error", 500)
 
         return render_template('payment.html', title=f'Payment for {tour.name}', tour=tour,
-                               stripe_public_key=stripe_public_key)
+                               stripe_public_key=stripe_public_key, stripe_webhook=stripe_webhook)
     except AppError as e:
         raise e
     except Exception as e:

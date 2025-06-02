@@ -8,6 +8,7 @@ from controllers.viewController import (
     guide_profile, payment, booking_summary
 )
 from controllers.authController import is_logged_in, protect, logger
+from bson import ObjectId
 
 HASHIDS_SALT = os.getenv('HASHIDS_SALT', 'default-salt')
 HASHIDS_MIN_LENGTH = int(os.getenv('HASHIDS_MIN_LENGTH', 16))
@@ -47,13 +48,16 @@ view_routes.route('/me')(is_logged_in(protect(get_my_tours)))
 @protect
 def payment_wrapper(hashed_id):
     try:
-        # Decode the hashed_id to get the original tour_id
         decoded = hashids.decode(hashed_id)
         if not decoded:
             raise AppError("Invalid tour ID", 400)
         tour_id = decoded[0]
-        # Convert to ObjectId string for the payment function
-        tour_id_str = f"{tour_id:024x}"  # Pad to 24 characters to match ObjectId format
+        # Assume hashids encodes ObjectId string or integer
+        tour_id_str = str(tour_id)
+        try:
+            ObjectId(tour_id_str)  # Validate ObjectId
+        except Exception:
+            raise AppError("Invalid tour ID format", 400)
         return payment(tour_id_str)
     except AppError as e:
         raise e
