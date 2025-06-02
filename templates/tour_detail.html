@@ -75,8 +75,7 @@
                     <!-- Action Buttons -->
                     <div class="mt-4 d-flex gap-3">
                         <a href="#" class="btn btn-outline-primary rounded-pill py-2 px-4">Add to Wishlist</a>
-                        <a href="{{ url_for('view_routes.destination', tour=tour.slug) }}" class="btn btn-primary rounded-pill py-2 px-4">Book Now</a>
-                    </div>
+                        <a href="{{ url_for('view_routes.payment', hashed_id=tour.id | hashid) }}" class="btn btn-primary rounded-pill py-2 px-4">Book Now</a>                    </div>
                 </div>
             </div>
             <!-- Additional Images -->

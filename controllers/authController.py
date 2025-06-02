@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 from jose import jwt
+from jose.exceptions import JWTError, ExpiredSignatureError
 import hashlib
 import datetime
 from flask import request, jsonify, make_response, g, current_app, url_for
@@ -9,6 +10,7 @@ from mongoengine import ValidationError
 from models.userModel import User, Role
 from Utils.AppError import AppError
 from Utils.email import Email
+
 import logging
 
 # Debug JWT module
@@ -246,11 +248,11 @@ def protect(f):
 
             # Call the original function
             return f(*args, **kwargs)
-        except jwt.ExpiredSignatureError:
+        except ExpiredSignatureError:
             logger.warning("Access attempt with expired token")
             raise AppError('Your token has expired! Please log in again.', 401)
-        except jwt.InvalidTokenError:
-            logger.warning("Access attempt with invalid token")
+        except JWTError as e:
+            logger.warning(f"Access attempt with invalid token: {str(e)}")
             raise AppError('Invalid token! Please log in again.', 401)
         except AppError as e:
             raise e

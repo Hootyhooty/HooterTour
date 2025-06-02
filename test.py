@@ -4,7 +4,7 @@ from Utils.AppError import AppError
 import os
 import traceback
 
-# Optional: Templates for rendering HTML
+# Optional: templates for rendering HTML
 templates = None
 if os.path.exists("templates"):
     from flask import Flask

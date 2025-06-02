@@ -11,7 +11,7 @@ from flask import current_app
 load_dotenv()
 
 # Configure Jinja2 environment for email templates
-template_loader = jinja2.FileSystemLoader(searchpath="Templates/email")
+template_loader = jinja2.FileSystemLoader(searchpath="templates/email")
 template_env = jinja2.Environment(loader=template_loader)
 
 class Email:
