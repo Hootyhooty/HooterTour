@@ -50,13 +50,20 @@ def payment_wrapper(hashed_id):
     try:
         decoded = hashids.decode(hashed_id)
         if not decoded:
+            logger.error(f"Failed to decode hashed_id: {hashed_id}")
             raise AppError("Invalid tour ID", 400)
-        tour_id = decoded[0]
-        # Assume hashids encodes ObjectId string or integer
-        tour_id_str = str(tour_id)
+        tour_id_int = decoded[0]
+        # Convert integer to 24-char hex ObjectId
+        tour_id_str = f"{tour_id_int:024x}"[:24]
         try:
-            ObjectId(tour_id_str)  # Validate ObjectId
-        except Exception:
+            tour_id = ObjectId(tour_id_str)
+            # Verify tour exists
+            tour = Tour.objects(id=tour_id).first()
+            if not tour:
+                logger.error(f"No tour found for ID: {tour_id_str}")
+                raise AppError("Tour not found", 404)
+        except Exception as e:
+            logger.error(f"Invalid ObjectId format: {tour_id_str}, error: {str(e)}")
             raise AppError("Invalid tour ID format", 400)
         return payment(tour_id_str)
     except AppError as e:

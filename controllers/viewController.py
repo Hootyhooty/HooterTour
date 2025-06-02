@@ -228,9 +228,11 @@ def destination():
             selected_tour = Tour.objects(slug=tour_slug, secret_tour__ne=True).first()
             if not selected_tour:
                 flash('Selected tour not found.', 'error')
-            elif hasattr(g, 'user'):
-                # Check for an existing booking for this user and tour
-                booking = Booking.objects(user=g.user.id, tour=selected_tour.id).first()
+            else:
+                logger.debug(f"Selected tour: {selected_tour.name}, ID: {selected_tour.id}")
+                if hasattr(g, 'user'):
+                    # Check for an existing booking for this user and tour
+                    booking = Booking.objects(user=g.user.id, tour=selected_tour.id).first()
 
         query = Tour.objects(secret_tour__ne=True)
         if search_term:
@@ -243,11 +245,11 @@ def destination():
                 }
             )
         tours = list(query.order_by('-ratings_average'))
-        print(f"Found {len(tours)} non-secret tours")
+        logger.debug(f"Found {len(tours)} non-secret tours")
         for tour in tours:
-            print(f"Tour: {tour.name}, ImageCover: {tour.image_cover}, Secret: {tour.secret_tour}")
+            logger.debug(f"Tour: {tour.name}, ImageCover: {tour.image_cover}, Secret: {tour.secret_tour}")
         if len(tours) == 0:
-            print("Warning: No tours available for destination page.")
+            logger.warning("No tours available for destination page.")
 
         return render_template(
             'destination.html',
@@ -258,7 +260,7 @@ def destination():
             booking=booking
         )
     except Exception as e:
-        print(f"Error in destination: {str(e)}")
+        logger.error(f"Error in destination: {str(e)}")
         flash(f'Error rendering destination page: {e}', 'error')
         return render_template('error.html'), 500
 

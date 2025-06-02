@@ -6,8 +6,10 @@ import io
 import os
 import sys
 import signal
-
+from bson import ObjectId
 from hashids import Hashids
+
+from Utils.AppError import AppError
 
 # Load environment variables from .env file
 load_dotenv()
@@ -53,12 +55,17 @@ def datetimeformat(value, format='%B %d, %Y'):
 # Define hashid filter
 def hashid_encode(value):
     try:
-        # Convert ObjectId (hex string) to integer
-        int_value = int(str(value), 16)
+        if isinstance(value, ObjectId):
+            int_value = int(str(value), 16)
+        elif isinstance(value, str):
+            ObjectId(value)  # Validate ObjectId string
+            int_value = int(value, 16)
+        else:
+            raise ValueError(f"Invalid input type for hashid: {type(value)}")
         return hashids.encode(int_value)
     except Exception as e:
         print(f"Error encoding hashid: {e}")
-        return value
+        raise AppError("Invalid tour ID format", 400)
 
 # Register the filter with Jinja2
 app.jinja_env.filters['datetimeformat'] = datetimeformat
