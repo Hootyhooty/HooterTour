@@ -1,6 +1,7 @@
-{% include "header.html" %}
+{% extends "base.html" %}
 
 {% block content %}
+
     <!-- Process Start -->
     <div class="container-xxl py-5">
         <div class="container">
@@ -100,8 +101,6 @@
     </div>
     <!-- Destination End -->
 
-    <!-- Back to Top -->
-    <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
 {% endblock %}
 
 {% block scripts %}
@@ -118,6 +117,5 @@
             });
         });
     </script>
-{% endblock %}
 
-{% include 'footer.html' %}
+{% endblock %}

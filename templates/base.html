@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- Title content -->
+{% include "title.html" %}
+
+<body>
+    <!-- Header content -->
+    {% include "header.html" %}
+
+    <!-- Main content block for child templates -->
+    {% block content %}{% endblock %}
+
+    <!-- Back to Top -->
+    <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
+
+    <!-- Script content -->
+    {% include "scripts.html" %}
+
+    <!-- Allow page-specific scripts -->
+    {% block scripts %}{% endblock %}
+
+    <!-- Footer content -->
+    {% include "footer.html" %}
+</body>
+</html>

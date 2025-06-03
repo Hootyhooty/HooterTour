@@ -354,13 +354,6 @@ def package():
         flash(f'Error rendering package page: {e}', 'error')
         return render_template('error.html'), 500
 
-def booking():
-    try:
-        return render_template('booking.html')
-    except Exception as e:
-        flash(f'Error rendering booking page: {e}', 'error')
-        return render_template('error.html'), 500
-
 def team():
     try:
         # Redirect to about page since team functionality is now in about

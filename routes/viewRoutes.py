@@ -3,7 +3,7 @@ from bson import ObjectId
 from Utils.AppError import AppError
 from controllers.viewController import (
     home, get_tour, get_account, get_my_tours,
-    destination, about, contact, service, error, package, booking, team, testimonial, alerts, dashboard, serve_image,
+    destination, about, contact, service, error, package, team, testimonial, alerts, dashboard, serve_image,
     guide_profile, payment, booking_summary
 )
 from controllers.authController import is_logged_in, protect, logger
@@ -20,7 +20,6 @@ view_routes.route('/contact', methods=['GET', 'POST'])(is_logged_in(alerts(conta
 view_routes.route('/service', methods=['GET', 'POST'])(is_logged_in(alerts(service)))
 view_routes.route('/404', methods=['GET', 'POST'])(is_logged_in(alerts(error)))
 view_routes.route('/package', methods=['GET', 'POST'])(is_logged_in(alerts(package)))
-view_routes.route('/booking', methods=['GET', 'POST'])(is_logged_in(alerts(booking)))
 view_routes.route('/team', methods=['GET', 'POST'])(is_logged_in(alerts(team)))
 view_routes.route('/testimonial', methods=['GET', 'POST'])(is_logged_in(alerts(testimonial)))
 view_routes.route('/dashboard/<profile_slug>', methods=['GET', 'POST'])(is_logged_in(protect(dashboard)))

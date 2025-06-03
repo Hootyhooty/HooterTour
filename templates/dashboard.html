@@ -1,4 +1,6 @@
-{% include 'header.html' %}
+{% extends "base.html" %}
+
+{% block content %}
 
 <!-- Dashboard Content -->
 <div class="container py-5">
@@ -58,6 +60,9 @@
     }
 </style>
 
+{% endblock %}
+
+{% block scripts %}
 <!-- Dashboard-specific JavaScript -->
 <script>
     $(document).ready(function() {
@@ -158,6 +163,4 @@
         });
     });
 </script>
-
-<!-- Footer -->
-{% include 'footer.html' %}
+{% endblock %}

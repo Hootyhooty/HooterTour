@@ -226,7 +226,6 @@ def delete_one_booking(id):
         logger.error(f"Error in delete_one_booking: {str(e)}")
         raise AppError(str(e), 500)
 
-
 # Route handlers
 def get_checkout_session(tourId):
     try:
