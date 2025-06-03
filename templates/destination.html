@@ -31,7 +31,7 @@
                         <hr class="w-50 mx-auto bg-primary mt-0">
                         <p class="mb-0">{% if selected_tour %}Ready to book {{ selected_tour.name }}? Proceed to payment.{% else %}Please select a tour first.{% endif %}</p>
                         {% if selected_tour %}
-                            <a href="{{ url_for('view_routes.payment', hashed_id=selected_tour.id | hashid) }}" class="btn btn-primary mt-3">Proceed to Payment</a>
+                            <a href="{{ url_for('view_routes.payment', id=selected_tour.id) }}" class="btn btn-primary mt-3">Proceed to Payment</a>
                         {% endif %}
                     </div>
                 </div>
@@ -45,7 +45,7 @@
                         <hr class="w-50 mx-auto bg-primary mt-0">
                         <p class="mb-0">{% if booking and selected_tour %}View your booking details for {{ selected_tour.name }}.{% else %}Complete payment to view your booking summary.{% endif %}</p>
                         {% if booking %}
-                            <a href="{{ url_for('view_routes.booking_summary', hashed_id=booking.id | hashid) }}" class="btn btn-primary mt-3">View Booking Summary</a>
+                            <a href="{{ url_for('view_routes.booking_summary', id=booking.id) }}" class="btn btn-primary mt-3">View Booking Summary</a>
                         {% endif %}
                     </div>
                 </div>
