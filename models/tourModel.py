@@ -93,6 +93,7 @@ class Tour(Document):
     start_location = EmbeddedDocumentField(Location, db_field='startLocation')
     locations = ListField(EmbeddedDocumentField(Location), db_field='locations')
     guides = ListField(ReferenceField('User'), db_field='guides')
+    stripe_payment_link = StringField(db_field='paymentLink')
 
     meta = {
         'collection': 'tours',
