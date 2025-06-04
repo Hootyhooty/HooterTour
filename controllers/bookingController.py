@@ -236,39 +236,38 @@ def get_checkout_session(tourId):
         if not tour:
             raise AppError('No tour found with that ID', 404)
 
-        session = stripe.checkout.Session.create(
-            payment_method_types=['card'],
-            success_url=f"{request.url_root}destination?tour={tour.slug}&alert=booking",
-            cancel_url=f"{request.url_root}tour/{tour.slug}",
-            customer_email=g.user.email if hasattr(g, 'user') else None,
-            client_reference_id=tourId,
-            line_items=[
-                {
-                    'price_data': {
-                        'currency': 'usd',
-                        'unit_amount': int(tour.price * 100),  # Convert to cents
-                        'product_data': {
-                            'name': f"{tour.name} Tour",
-                            'description': tour.summary,
-                            'images': [f"{request.url_root}img/tours/{tour.image_cover}"],
-                        },
-                    },
-                    'quantity': 1,
-                }
-            ],
-            mode='payment',
-        )
+        if not tour.stripe_payment_link:
+            raise AppError('No payment link configured for this tour', 400)
 
-        logger.info(f"Checkout session created for tour {tourId}")
+        if not hasattr(g, 'user'):
+            raise AppError('User not authenticated', 401)
+
+        user = g.user
+
+        # Create a booking before redirecting to Stripe
+        price = tour.price  # Price in dollars
+        booking = Booking(
+            tour=tour.id,
+            user=user.id,
+            price=price,
+            tour_slug=tour.slug,
+            paid=False  # Set to False initially; update via webhook
+        )
+        booking.save()
+        logger.info(f"Booking created for tour {tourId} by user {user.email}: Booking ID {str(booking.id)}")
+
+        # Attach the booking ID to the payment link as a query parameter
+        # This will be used in the success redirect to show the booking summary
+        stripe_payment_link = f"{tour.stripe_payment_link}&client_reference_id={str(booking.id)}"
+
+        logger.info(f"Redirecting to Stripe payment link for tour {tourId}: {stripe_payment_link}")
         return jsonify({
             "status": "success",
-            "session": session
+            "redirect_url": stripe_payment_link
         }), 200
+
     except AppError as e:
         raise e
-    except stripe.error.StripeError as e:
-        logger.error(f"Stripe error: {str(e)}")
-        raise AppError(f"Stripe error: {str(e)}", 400)
     except Exception as e:
         logger.error(f"Error in get_checkout_session: {str(e)}")
         raise AppError(str(e), 500)
@@ -286,10 +285,23 @@ def webhook_checkout():
 
         if event['type'] == 'checkout.session.completed':
             logger.debug(f"Processing checkout.session.completed: {event['data']['object']}")
-            create_booking_checkout(event['data']['object'])
-            logger.info("Webhook: Checkout session completed, booking created")
+            session = event['data']['object']
+            booking_id = session.get('client_reference_id')
+            if not booking_id:
+                logger.error("No booking ID found in client_reference_id")
+                return jsonify({'error': 'No booking ID provided'}), 400
+
+            booking = Booking.objects(id=booking_id).first()
+            if not booking:
+                logger.error(f"No booking found with ID: {booking_id}")
+                return jsonify({'error': 'Booking not found'}), 404
+
+            # Update the booking to mark it as paid
+            booking.update(paid=True)
+            logger.info(f"Booking {booking_id} marked as paid after Stripe checkout session completion")
 
         return jsonify({'received': True}), 200
+
     except ValueError as e:
         logger.error(f"Webhook error: Invalid payload - {str(e)}")
         return jsonify({'error': f"Webhook error: {str(e)}"}), 400

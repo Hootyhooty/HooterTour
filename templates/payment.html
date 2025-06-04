@@ -43,22 +43,8 @@
 {% endblock %}
 
 {% block scripts %}
-    <script src="https://js.stripe.com/v3/"></script>
     <script>
         $(document).ready(function() {
-            if (typeof Stripe === 'undefined') {
-                console.error('Stripe failed to load');
-                alert('Payment service unavailable. Please try again later.');
-                return;
-            }
-
-            const stripePublicKey = '{{ stripe_public_key | e | default('') }}';
-            if (!stripePublicKey) {
-                console.error('Stripe public key is missing');
-                alert('Payment service unavailable. Please try again later.');
-                return;
-            }
-
             const tourId = '{{ tour.id | e | default('') }}';
             if (!tourId) {
                 console.error('Tour ID is missing');
@@ -66,9 +52,7 @@
                 return;
             }
 
-            const stripe = Stripe(stripePublicKey);
             const checkoutButton = document.getElementById('checkout-button');
-
             if (!checkoutButton) {
                 console.error('Checkout button not found');
                 return;
@@ -93,12 +77,8 @@
                         alert(`Checkout session failed: ${data.message || 'Unknown issue'}`);
                         return;
                     }
-                    const result = await stripe.redirectToCheckout({
-                        sessionId: data.session.id
-                    });
-                    if (result.error) {
-                        alert(`Stripe issue: ${result.error.message}`);
-                    }
+                    // Redirect to the Stripe payment link
+                    window.location.href = data.redirect_url;
                 } catch (err) {
                     console.error('Payment failed:', err);
                     alert(`An issue occurred: ${err.message || 'Unknown issue'}`);
