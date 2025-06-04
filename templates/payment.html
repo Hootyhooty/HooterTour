@@ -42,51 +42,41 @@
     </div>
     <!-- Payment End -->
 
-    <!-- Back to Top -->
-    <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
-
 {% endblock %}
 
 {% block scripts %}
     <script src="https://js.stripe.com/v3/"></script>
     <script>
         $(document).ready(function() {
-            new WOW().init();
             const stripe = Stripe('{{ stripe_public_key }}');
             const checkoutButton = document.getElementById('checkout-button');
 
             checkoutButton.addEventListener('click', async () => {
-                try {
-                    const token = localStorage.getItem('jwt');
-                    if (!token) {
-                        alert('Please log in to proceed with payment.');
-                        window.location.href = '/';
-                        return;
+                const token = localStorage.getItem('jwt');
+                if (!token) {
+                    alert('Please log in to proceed with payment.');
+                    window.location.href = '/';
+                    return;
+                }
+                const response = await fetch('https://hootertours.onrender.com/api/v1/bookings/checkout-session/{{ tour.id }}', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
                     }
-                    const response = await fetch('https://hootertours.onrender.com/api/v1/bookings/checkout-session/{{ tour.id }}', {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}'
-                        }
-                    });
-                    const data = await response.json();
-                    if (data.status !== 'success') {
-                        alert(`Error creating checkout session: ${data.message || 'Unknown error'}`);
-                        return;
-                    }
-                    const result = await stripe.redirectToCheckout({
-                        sessionId: data.session.id
-                    });
-                    if (result.error) {
-                        alert(`Stripe error: ${result.error.message}`);
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert(`An error occurred: ${error.message}`);
+                });
+                const data = await response.json();
+                if (data.status !== 'success') {
+                    alert(`Checkout session failed: ${data.message || 'Unknown issue'}`);
+                    return;
+                }
+                const result = await stripe.redirectToCheckout({
+                    sessionId: data.session.id
+                });
+                if (result.error) {
+                    alert(`Stripe issue: ${result.error.message}`);
                 }
             });
         });
     </script>
-
 {% endblock %}
