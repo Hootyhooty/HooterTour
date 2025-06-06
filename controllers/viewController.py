@@ -14,6 +14,8 @@ from db import db
 from functools import wraps
 import random
 from io import BytesIO
+from flask_wtf import FlaskForm
+from wtforms import HiddenField
 
 # Middleware equivalent to alerts
 def alerts(f):
@@ -357,7 +359,7 @@ def package():
 def team():
     try:
         # Redirect to about page since team functionality is now in about
-        return redirect(url_for('view_routes.about'))
+        return redirect(url_for('viewRoutes.about'))
     except Exception as e:
         print(f"Error in team redirect: {str(e)}")
         flash(f'Error redirecting to about page: {e}', 'error')
@@ -488,4 +490,53 @@ def booking_summary(booking_id):
     except Exception as e:
         logger.error(f"Error in booking_summary: {str(e)}")
         flash(f'Error loading booking summary: {e}', 'error')
+        return render_template('error.html', title='Error'), 500
+
+class MockPaymentForm(FlaskForm):
+    booking_id = HiddenField('booking_id')
+
+def mock_payment():
+    try:
+        booking_id = request.args.get('booking_id')
+        if not booking_id:
+            raise AppError('Booking ID missing', 400)
+        booking = Booking.objects(id=booking_id).first()
+        if not booking:
+            raise AppError('Booking not found', 404)
+        if str(booking.user.id) != str(g.user.id):
+            raise AppError('Unauthorized: You can only access your own bookings', 403)
+        tour = Tour.objects(id=booking.tour.id).first()
+        if not tour:
+            raise AppError('Associated tour not found', 404)
+        form = MockPaymentForm(booking_id=booking_id)
+        return render_template('mock_payment.html', title='Mock Payment', booking_id=booking_id, tour=tour, form=form)
+    except AppError as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Error in mock_payment: {str(e)}")
+        flash(f'Error loading mock payment page: {e}', 'error')
+        return render_template('error.html', title='Error'), 500
+
+def mock_payment_success():
+    try:
+        booking_id = request.form.get('booking_id')
+        if not booking_id:
+            raise AppError('Booking ID missing', 400)
+
+        booking = Booking.objects(id=booking_id).first()
+        if not booking:
+            raise AppError('Booking not found', 404)
+
+        if str(booking.user.id) != str(g.user.id):
+            raise AppError('Unauthorized: You can only access your own bookings', 403)
+
+        booking.update(paid=True)
+
+        return redirect(url_for('view_routes.booking_summary', id=booking_id, alert='booking'))
+
+    except AppError as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Error in mock_payment_success: {str(e)}")
+        flash(f'Error processing mock payment: {e}', 'error')
         return render_template('error.html', title='Error'), 500

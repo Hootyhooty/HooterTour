@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container-xxl py-5">
+        <div class="container">
+            <div class="text-center pb-4 wow fadeInUp" data-wow-delay="0.1s">
+                <h6 class="section-title bg-white text-center text-primary px-3">Mock Payment</h6>
+                <h1 class="mb-5">Simulated Payment for {{ tour.name | default('Unknown Tour', true) }}</h1>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-lg-6 wow fadeInUp" data-wow-delay="0.3s">
+                    {% if tour and booking_id %}
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <p>This is a mock payment page for portfolio purposes. Click below to simulate a successful payment.</p>
+                                <p><strong>Tour:</strong> {{ tour.name }}</p>
+                                <p><strong>Price:</strong> ${{ "%.2f" | format(tour.price | default(0)) }}</p>
+                                <form action="{{ url_for('view_routes.mock_payment_success') }}" method="POST">
+                                    {{ form.hidden_tag() }} <!-- Adds CSRF token if using Flask-WTF -->
+                                    <input type="hidden" name="booking_id" value="{{ booking_id }}">
+                                    <button type="submit" class="btn btn-success rounded-pill py-2 px-4 mt-3" aria-label="Complete Mock Payment">Complete Payment (Mock)</button>
+                                </form>
+                                <a href="{{ url_for('view_routes.get_tour_by_slug', slug=tour.slug) }}" class="btn btn-secondary rounded-pill py-2 px-4 mt-3" aria-label="Cancel Payment">Cancel Payment</a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-danger text-center" role="alert">
+                            Unable to process payment: Tour or booking information is missing.
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="{{ url_for('view_routes.home') }}" class="btn btn-secondary rounded-pill py-2 px-4" aria-label="Return to Home">Return to Home</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

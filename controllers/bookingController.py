@@ -236,34 +236,28 @@ def get_checkout_session(tourId):
         if not tour:
             raise AppError('No tour found with that ID', 404)
 
-        if not tour.stripe_payment_link:
-            raise AppError('No payment link configured for this tour', 400)
-
         if not hasattr(g, 'user'):
             raise AppError('User not authenticated', 401)
 
         user = g.user
 
-        # Create a booking before redirecting to Stripe
-        price = tour.price  # Price in dollars
+        price = tour.price
         booking = Booking(
             tour=tour.id,
             user=user.id,
             price=price,
             tour_slug=tour.slug,
-            paid=False  # Set to False initially; update via webhook
+            paid=False
         )
         booking.save()
         logger.info(f"Booking created for tour {tourId} by user {user.email}: Booking ID {str(booking.id)}")
 
-        # Attach the booking ID to the payment link as a query parameter
-        # This will be used in the success redirect to show the booking summary
-        stripe_payment_link = f"{tour.stripe_payment_link}&client_reference_id={str(booking.id)}"
+        # Mock redirect URL instead of Stripe
+        mock_redirect_url = f"{request.url_root}mock-payment?booking_id={str(booking.id)}"
 
-        logger.info(f"Redirecting to Stripe payment link for tour {tourId}: {stripe_payment_link}")
         return jsonify({
             "status": "success",
-            "redirect_url": stripe_payment_link
+            "redirect_url": mock_redirect_url
         }), 200
 
     except AppError as e:
