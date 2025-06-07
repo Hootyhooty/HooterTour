@@ -1,13 +1,13 @@
-from datetime import datetime
-from flask import Flask, g, render_template, request, abort, send_file
+from datetime import datetime, timedelta
+from flask import Flask, request, abort, send_file
 from flask_bootstrap import Bootstrap
 from dotenv import load_dotenv
 import io
 import os
 import sys
 import signal
-from bson import ObjectId
 from hashids import Hashids
+from models.bookingModel import Booking
 
 # Load environment variables from .env file
 load_dotenv()
@@ -89,7 +89,6 @@ signal.signal(signal.SIGINT, signal_handler)
 # Import controllers and routes after app initialization to avoid circular imports
 from controllers.authController import signup, login
 from controllers.bookingController import webhook_checkout
-from controllers.viewController import get_login_form
 from routes.viewRoutes import view_routes
 from routes.userRoutes import user_routes
 from routes.tourRoutes import tour_routes
@@ -107,12 +106,16 @@ app.register_blueprint(review_routes)
 app.register_blueprint(booking_routes)
 app.register_blueprint(testimonial_routes)
 
-# Combined /login route
-@app.route('/login', methods=['GET', 'POST'])
-def login_route():
-    if request.method == 'GET':
-        return get_login_form()
-    return login()
+# Cleaning fail payments
+from apscheduler.schedulers.background import BackgroundScheduler
+
+def cleanup_unpaid_bookings():
+    threshold = datetime.utcnow() - timedelta(hours=24)
+    Booking.objects(paid=False, created_at__lt=threshold).delete()
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(cleanup_unpaid_bookings, 'interval', hours=24)
+scheduler.start()
 
 # Register auth routes
 app.route('/signup', methods=['GET', 'POST'])(signup)

@@ -1,8 +1,11 @@
 import os
 import traceback
+import uuid
 from datetime import datetime
-from flask import render_template, request, flash, g, redirect, url_for, send_file, current_app
+from bson import ObjectId
+from flask import render_template, request, flash, g, redirect, url_for, send_file, current_app, jsonify
 from jinja2 import TemplateNotFound
+from pymongo.errors import OperationFailure, WriteError
 from Utils.apiFeature import logger
 from models.tourModel import Tour, Location
 from models.userModel import User, Role
@@ -171,12 +174,6 @@ def get_tour(slug):
         logger.error(f"Error in get_tour: {str(e)}\n{traceback.format_exc()}")
         flash(f'Error loading tour: {e}', 'error')
         return render_template('error.html', title='Error'), 500
-
-def get_login_form():
-    return render_template('login.html', title='Log into your account')
-
-def get_account():
-    return render_template('account.html', title='Your account')
 
 def get_my_tours():
     try:
@@ -492,51 +489,136 @@ def booking_summary(booking_id):
         flash(f'Error loading booking summary: {e}', 'error')
         return render_template('error.html', title='Error'), 500
 
+
+# Mocking section (only reason this section has been implemented bcuz restriction on stripe)
 class MockPaymentForm(FlaskForm):
     booking_id = HiddenField('booking_id')
+    session_id = HiddenField('session_id')
+    # card_number = StringField('card_number')  # Commented out but kept for future use
+    # expiry = StringField('expiry')           # Commented out but kept for future use
+    # cvc = StringField('cvc')                 # Commented out but kept for future use
 
 def mock_payment():
     try:
         booking_id = request.args.get('booking_id')
         if not booking_id:
             raise AppError('Booking ID missing', 400)
+
+        # Validate booking_id before rendering
         booking = Booking.objects(id=booking_id).first()
         if not booking:
+            logger.error(f"Invalid booking_id: {booking_id}")
             raise AppError('Booking not found', 404)
+
         if str(booking.user.id) != str(g.user.id):
             raise AppError('Unauthorized: You can only access your own bookings', 403)
+
         tour = Tour.objects(id=booking.tour.id).first()
         if not tour:
             raise AppError('Associated tour not found', 404)
-        form = MockPaymentForm(booking_id=booking_id)
-        return render_template('mock_payment.html', title='Mock Payment', booking_id=booking_id, tour=tour, form=form)
+
+        # Create mock Stripe session data
+        mock_session = {
+            'id': f"cs_mock_{uuid.uuid4().hex}",  # Mock session ID
+            'currency': 'USD',
+            'amount_total': int(tour.price * 100),  # Convert to cents
+            'client_reference_id': str(booking.id),
+            'customer_email': g.user.email if g.user else ''
+        }
+
+        form = MockPaymentForm(booking_id=booking_id, session_id=mock_session['id'])
+        logger.debug(f"Rendering mock_payment with booking_id: {booking_id}, session_id: {mock_session['id']}")
+        return render_template(
+            'mock_payment.html',
+            title='Mock Payment',
+            booking_id=booking_id,
+            tour=tour,
+            session=mock_session,
+            form=form
+        )
     except AppError as e:
         raise e
     except Exception as e:
-        logger.error(f"Error in mock_payment: {str(e)}")
+        logger.error(f"Error in mock_payment: {str(e)}\n{traceback.format_exc()}")
         flash(f'Error loading mock payment page: {e}', 'error')
         return render_template('error.html', title='Error'), 500
 
 def mock_payment_success():
     try:
         booking_id = request.form.get('booking_id')
-        if not booking_id:
-            raise AppError('Booking ID missing', 400)
+        session_id = request.form.get('session_id')
+        # card_number = request.form.get('card_number')  # Commented out but kept
+        # expiry = request.form.get('expiry')           # Commented out but kept
+        # cvc = request.form.get('cvc')                 # Commented out but kept
 
-        booking = Booking.objects(id=booking_id).first()
+        logger.debug(f"Received form data: {dict(request.form)}")  # Debug log of form data
+
+        if not booking_id or not session_id:
+            logger.error(f"Missing data: booking_id={booking_id}, session_id={session_id}")
+            raise AppError('Booking ID or session ID missing', 400)
+
+        # Validate booking_id format and existence
+        try:
+            booking_id_obj = ObjectId(booking_id)
+        except Exception as e:
+            logger.error(f"Invalid ObjectId format for booking_id: {booking_id}, error: {str(e)}")
+            raise AppError('Invalid booking ID format', 400)
+
+        booking = Booking.objects(id=booking_id_obj).first()
         if not booking:
+            logger.error(f"Booking not found for id: {booking_id}")
             raise AppError('Booking not found', 404)
 
         if str(booking.user.id) != str(g.user.id):
             raise AppError('Unauthorized: You can only access your own bookings', 403)
 
-        booking.update(paid=True)
+        # Commented out credit card validation
+        # if not card_number or not expiry or not cvc:
+        #     raise AppError('Card details are required', 400)
+        # # Basic validation (can be enhanced with regex)
+        # if not (len(card_number.replace(' ', '')) == 16 and expiry.replace(' ', '').replace('/', '').isdigit() and len(cvc) == 3):
+        #     raise AppError('Invalid card details', 400)
+
+        # Attempt to update booking with only paid field
+        try:
+            logger.debug(f"Attempting to update booking {booking_id} with paid=True")
+            booking.update(paid=True)
+            logger.info(f"Successfully updated booking {booking_id} to paid")
+        except (OperationFailure, WriteError) as db_error:
+            logger.error(f"Database error updating booking {booking_id}: {str(db_error)}")
+            raise AppError(f"Failed to update booking: {str(db_error)}", 500)
+        except Exception as e:
+            logger.error(f"Unexpected error updating booking {booking_id}: {str(e)}")
+            raise AppError(f"Unexpected error updating booking: {str(e)}", 500)
+
+        # Simulate webhook confirmation
+        logger.info(f"Mock webhook: Payment completed for session {session_id}, booking {booking_id}, email {g.user.email if g.user else 'Unknown'}")
 
         return redirect(url_for('view_routes.booking_summary', id=booking_id, alert='booking'))
-
     except AppError as e:
-        raise e
-    except Exception as e:
-        logger.error(f"Error in mock_payment_success: {str(e)}")
+        logger.error(f"AppError in mock_payment_success: {str(e)}")
         flash(f'Error processing mock payment: {e}', 'error')
         return render_template('error.html', title='Error'), 500
+    except Exception as e:
+        logger.error(f"Error in mock_payment_success: {str(e)}\n{traceback.format_exc()}")
+        flash(f'Error processing mock payment: {e}', 'error')
+        return render_template('error.html', title='Error'), 500
+
+def mock_webhook():
+    try:
+        payload = request.get_json()
+        booking_id = payload.get('client_reference_id')
+        session_id = payload.get('id')
+        if not booking_id or not session_id:
+            logger.error("Mock webhook: Missing booking_id or session_id")
+            return jsonify({'error': 'Missing booking_id or session_id'}), 400
+        booking = Booking.objects(id=booking_id).first()
+        if not booking:
+            logger.error(f"Mock webhook: Booking {booking_id} not found")
+            return jsonify({'error': 'Booking not found'}), 404
+        logger.info(f"Mock webhook: Processed payment for session {session_id}, booking {booking_id}")
+        booking.update(paid=True, updated_at=datetime.utcnow())
+        return jsonify({'received': True}), 200
+    except Exception as e:
+        logger.error(f"Mock webhook error: {str(e)}")
+        return jsonify({'error': str(e)}), 500

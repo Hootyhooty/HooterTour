@@ -1,10 +1,10 @@
-from flask import Blueprint
+from flask import Blueprint, request
 from bson import ObjectId
 from Utils.AppError import AppError
 from controllers.viewController import (
-    home, get_tour, get_account, get_my_tours,
+    home, get_tour, get_my_tours,
     destination, about, contact, service, error, package, team, testimonial, alerts, dashboard, serve_image,
-    guide_profile, payment, booking_summary, mock_payment, mock_payment_success
+    guide_profile, payment, booking_summary, mock_payment, mock_payment_success, mock_webhook
 )
 from controllers.authController import is_logged_in, protect, logger
 
@@ -27,9 +27,9 @@ view_routes.route('/image/<filename>')(serve_image)
 view_routes.route('/about/<name>', methods=['GET'], endpoint='guide_profile')(is_logged_in(alerts(guide_profile)))
 view_routes.route('/overview', endpoint='overview')(is_logged_in(alerts(home)))
 view_routes.route('/tour/<slug>')(is_logged_in(alerts(get_tour)))
-view_routes.route('/account')(is_logged_in(alerts(get_account)))
 view_routes.route('/me')(is_logged_in(protect(get_my_tours)))
 view_routes.route('/mock-payment', methods=['GET'], endpoint='mock_payment')(is_logged_in(protect(mock_payment)))
+view_routes.route('/mock-webhook', methods=['POST'], endpoint='mock_webhook')(mock_webhook)
 view_routes.route('/mock-payment-success', methods=['POST'], endpoint='mock_payment_success')(is_logged_in(protect(mock_payment_success)))
 
 # Updated payment route
