@@ -346,13 +346,6 @@ def error():
         flash(f'Error rendering 404 page: {e}', 'error')
         return render_template('error.html'), 500
 
-def package():
-    try:
-        return render_template('package.html')
-    except Exception as e:
-        flash(f'Error rendering package page: {e}', 'error')
-        return render_template('error.html'), 500
-
 def team():
     try:
         # Redirect to about page since team functionality is now in about

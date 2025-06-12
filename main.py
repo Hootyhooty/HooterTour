@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from flask import Flask, request, abort, send_file
+from flask import Flask, abort, send_file
 from flask_bootstrap import Bootstrap
 from dotenv import load_dotenv
 import io
@@ -87,7 +87,7 @@ signal.signal(signal.SIGTERM, signal_handler)
 signal.signal(signal.SIGINT, signal_handler)
 
 # Import controllers and routes after app initialization to avoid circular imports
-from controllers.authController import signup, login
+from controllers.authController import signup
 from controllers.bookingController import webhook_checkout
 from routes.viewRoutes import view_routes
 from routes.userRoutes import user_routes
@@ -203,8 +203,8 @@ if __name__ == "__main__":
 
     print("Attempting to upload images to user_imgs and imgs collections...")
     try:
-        from upload_images import upload_images
-        from upload_tour_images import upload_tour_images
+        from scripts.upload_images import upload_images
+        from scripts.upload_tour_images import upload_tour_images
         upload_images()
         upload_tour_images()
     except Exception as e:
