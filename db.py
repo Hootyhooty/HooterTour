@@ -24,7 +24,7 @@ class Database:
 
     def connect(self):
         try:
-            print(f"Connecting to MongoDB with URI: {self.connection_string}")
+            print(f"Connecting to MongoDB")
             self.client = MongoClient(self.connection_string, serverSelectionTimeoutMS=5000)
             self.client.admin.command('ping')
             self.db = self.client['tourist_db']
@@ -34,7 +34,7 @@ class Database:
             self.user_imgs_collection = self.db['user_imgs']
             self.imgs_collection = self.db['imgs']
             # self.tour_imgs_collection = self.db['tour_imgs']  # Commented out: No longer using tour_imgs
-            print(f"Initialized collections: users={self.users_collection}, tours={self.tours_collection}, reviews={self.reviews_collection}, user_imgs={self.user_imgs_collection}, imgs={self.imgs_collection}")
+            print(f"Initialized collections")
             print("DB connection successful!")
 
             connect(db='tourist_db', host=self.connection_string)

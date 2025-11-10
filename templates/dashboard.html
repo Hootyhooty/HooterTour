@@ -137,21 +137,17 @@
             $.ajax({
                 url: '/api/v1/users/update-me',
                 method: 'PATCH',
-                headers: {
-                    'Authorization': 'Bearer ' + token
-                },
                 data: formData,
                 processData: false,
                 contentType: false,
+                xhrFields: {
+                    withCredentials: true  // <-- allow cookies to be sent
+                },
                 success: function(response) {
                     $('#form-success').text(response.message || 'Profile updated successfully').show();
                     $('#form-error').hide();
                     setTimeout(() => {
-                        try {
-                            location.reload(true);
-                        } catch (e) {
-                            window.location = window.location.href;
-                        }
+                        location.reload();
                     }, 2000);
                 },
                 error: function(xhr) {
@@ -160,6 +156,7 @@
                     $('#form-success').hide();
                 }
             });
+
         });
     });
 </script>

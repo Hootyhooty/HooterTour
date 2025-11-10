@@ -348,12 +348,49 @@ def error():
 
 def team():
     try:
-        # Redirect to about page since team functionality is now in about
-        return redirect(url_for('viewRoutes.about'))
+        logger.debug("Entering team() function")
+        guides = User.objects(role__in=[Role.GUIDE, Role.LEAD_GUIDE], active=True).order_by('-role', 'name')
+        logger.debug(f"Found {len(guides)} active users with role 'guide' or 'lead-guide': {[g.name for g in guides]}")
+
+        if not guides:
+            all_roles = User.objects().distinct('role')
+            logger.debug(f"No guides found. All roles in database: {all_roles}")
+            flash('No guides available at the moment.', 'info')
+            selected_guides = []
+        else:
+            selected_guides = []
+            for guide in guides:
+                if not guide.profile_slug:
+                    logger.warning(f"Guide {guide.name} missing profile_slug")
+                    continue
+                if not guide.name:
+                    logger.warning(f"Guide with profile_slug {guide.profile_slug} missing name")
+                    continue
+                guide_data = {
+                    '_id': str(guide.id),
+                    'name': guide.name,
+                    'role': guide.role.value.replace('-', ' ').title(),
+                    'photo': f"/api/v1/users/image/{guide.profile_slug}" if guide.photo and guide.photo != 'default.jpg' else '/static/img/users/default.jpg',
+                    'facebook': getattr(guide, 'facebook', ''),
+                    'instagram': getattr(guide, 'instagram', ''),
+                    'twitter': getattr(guide, 'twitter', ''),
+                    'profile_slug': guide.profile_slug
+                }
+                selected_guides.append(guide_data)
+            logger.debug(f"Prepared selected_guides: {selected_guides}")
+
+        logger.debug("Attempting to render team.html")
+        response = render_template('team.html', title='Team', guides=selected_guides)
+        logger.debug("Successfully rendered team.html")
+        return response
+    except TemplateNotFound as e:
+        logger.error(f"TemplateNotFound in team: {str(e)}\n{traceback.format_exc()}")
+        flash(f'Error: Template {e} not found.', 'error')
+        return render_template('error.html', title='Template Error'), 500
     except Exception as e:
-        print(f"Error in team redirect: {str(e)}")
-        flash(f'Error redirecting to about page: {e}', 'error')
-        return render_template('error.html'), 500
+        logger.error(f"Error in team function: {str(e)}\n{traceback.format_exc()}")
+        flash(f'Error rendering team page: {e}', 'error')
+        return render_template('error.html', title='Error'), 500
 
 def testimonial():
     try:

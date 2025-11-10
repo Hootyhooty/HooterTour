@@ -12,6 +12,9 @@ from Utils.AppError import AppError
 from Utils.email import Email
 
 import logging
+#is_prod = current_app.config.get('ENV') == 'production'
+is_prod = os.getenv('ENV') == 'production'
+
 
 # Debug JWT module
 logger = logging.getLogger(__name__)
@@ -48,7 +51,7 @@ def sign_token(user_id: str) -> str:
         logger.error(f"JWT encode failed: {str(e)}")
         raise AppError("Token generation failed: Invalid JWT library", 500)
 
-def create_send_token(user: User, status_code: int, req) -> 'make_response':
+def create_send_token(user: User, status_code: int) -> 'make_response':
     """
     Create a JWT token, set it in a cookie, and return a response with a redirect URL.
     """
@@ -74,8 +77,8 @@ def create_send_token(user: User, status_code: int, req) -> 'make_response':
         token,
         expires=expires,
         httponly=True,
-        secure=True if current_app.config.get('ENV') == 'production' else False,
-        samesite='Strict'
+        secure=is_prod,
+        samesite='None' if is_prod else 'Lax'
     )
 
     # Remove sensitive fields from user
@@ -153,7 +156,7 @@ def signup():
             # Continue despite email failure
 
         logger.info(f"User signed up successfully: {new_user.email}")
-        return create_send_token(new_user, 201, request)
+        return create_send_token(new_user, 201)
     except ValidationError as e:
         logger.error(f"Validation error during signup: {str(e)}")
         raise AppError(f"Validation error: {str(e)}", 400)
@@ -184,7 +187,7 @@ def login():
             raise AppError('Incorrect email or password', 401)
 
         logger.info(f"User logged in successfully: {user.email}")
-        return create_send_token(user, 200, request)
+        return create_send_token(user, 200)
     except AppError as e:
         raise e
     except Exception as e:

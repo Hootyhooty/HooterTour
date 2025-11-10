@@ -15,6 +15,7 @@ import logging
 from datetime import datetime
 from dateutil import parser
 from db import db
+from controllers.authController import create_send_token
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -467,11 +468,11 @@ def update_me():
         updated_user = User.objects(id=g.user.id).first()
 
         logger.info(f"User updated successfully: {updated_user.email}")
-        return jsonify({
-            "status": "success",
-            "message": "Profile updated successfully",
-            "data": {"user": updated_user.to_json()}
-        }), 200
+        return create_send_token(updated_user, 200)
+        #return jsonify({
+        #    "message": "Profile updated successfully",
+        #    "data": {"user": updated_user.to_json()}
+        #}), 200 
     except AppError as e:
         logger.error(f"AppError: {str(e)}")
         raise e
